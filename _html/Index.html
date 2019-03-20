@@ -1,0 +1,141 @@
+<!DOCTYPE  html>
+<html>
+	<head>
+		<title>Aurem Challenge</title>	
+	    <link href="jvstyle.css" rel="stylesheet" type="text/css" />
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+		<script>
+			var application = angular.module('auremApp', []);
+			application.controller('auremController', function($scope, $http, $sce, $timeout){
+			$scope.searchPostCategory = function(category){
+		   if($scope.categorySearch.length > 0){
+				var request = {};
+				var headers = {
+					'Access-Control-Allow-Origin': true,
+					'Content-Type': 'application/json; charset=utf-8',
+					"X-Requested-With": "XMLHttpRequest"
+              }
+				$http.get('http://www.reddit.com/r/' + $scope.categorySearch + '/.json', request, headers).then(function(response){
+					    var countMax = 100;
+						var countCurrent = 0;
+						var timeVal = 0;
+						var progressElement = document.getElementById('progressBarE');
+						progressElement.style.removeProperty('display');
+						 var prog = setInterval(function(){
+							countCurrent++;
+							console.log(countCurrent);
+							progressElement.value = countCurrent;
+							
+							if(countCurrent == countMax){
+								console.log("max");
+								
+								clearInterval(prog);								
+							}
+						 },10);
+						
+						
+						$timeout(function(){
+								progressElement.style.display = "none";
+								$scope.responseReddit = response.data.data.children;
+								$scope.entro = "aww im here";
+						},500);	
+											
+				}, function(response)
+				{
+					console.log("aww snap error");
+				});		
+			}else{
+				$scope.responseReddit = null;
+			}			
+		}
+	});
+	
+	
+	function showPopup(html){
+		var elementPost = document.getElementsByClassName('postContainer'); 
+		for(var j=0; j < elementPost.length; j++){
+			elementPost[j].classList.add("modalBodyEffect");
+		}
+	
+		var elementDiv = document.getElementById('modalPostContentDiv');
+		elementDiv.innerHTML = "";
+		elementDiv.innerHTML = html;
+		
+		var modalBox = document.getElementById('modalPostPop');
+		modalBox.style.display = "block";
+	}
+	
+	function closePopup(){
+	
+		var elementPost = document.getElementsByClassName('postContainer'); 
+		for(var j=0; j < elementPost.length; j++){
+			elementPost[j].classList.remove("modalBodyEffect");
+		}
+		var modalBox = document.getElementById('modalPostPop');
+		modalBox.style.display = "none";
+	}
+	
+</script>
+	</head>
+	<body>
+		<form>
+			<div ng-app="auremApp" ng-controller="auremController" ng-init="progressValue=0; categorySearch='funny'; searchPostCategory();" class="mainContainer">
+				<div class="searchBarContainer"> 
+					<div class="searchBarItemsContainer">
+						<div class="searchBarItemTitle">Reddit</div>
+						<div class="searchBarControl">
+							<input class="searchInput" type="text" ng-model="categorySearch" ng-keyup="searchPostCategory()" />
+							<!-- <input type="button" ng-click= "searchPostCategory()"/> -->
+						</div>
+					</div>
+				</div>
+				<div class="feedContent">
+				  <div style="border-bottom: 1px solid #e6e6e6; margin-bottom: 10px; margin-top: 10px;" class="postContainer" ng-repeat="post in responseReddit" onclick="showPopup(this.innerHTML)">
+					<div class="postImage" style="padding-right: 20px;">
+						<img class="img-post" src="{{post.data.thumbnail}}">
+					</div>
+					<div>
+					   <div style="display:flex; flex-direction: column; height: 100%">
+							<div class="postAuthor">{{post.data.author}}</div>
+							<div class="postContent"><p>{{post.data.title}}</p></div>
+							<div class="postSocialBar">
+								<div class="postSocialComments">
+									<div style="display:flex; flex-direction: row; align-items: center">
+										<img class="commentIcon" src="" />
+										<div style="padding-left: 2px">{{" " + post.data.num_comments + " comments"}}</div>
+									</div>
+								</div>
+								<div class="postSocialUps">
+									<div style="display:flex; flex-direction: row; align-items: center">
+										<img class="upsIcon" src="" />
+										<div style="padding-left: 2px">{{" " + post.data.ups + " ups"}}</div>
+									</div>
+								
+								</div>
+								<div class="postSocialDowns">
+									<div style="display:flex; flex-direction: row; align-items: center">
+										<img class="downsIcon" src="" />
+										<div>{{ " " + post.data.downs + " downs"}}</div>
+									</div>					
+								</div>								
+							</div>
+						</div>
+					</div>
+				  </div>
+				</div>
+			</div>
+			<progress id="progressBarE" class="progressBar" value="0"; max="100">
+			</progress>
+			<div style="width:100%">
+				<div id="modalPostPop" class="postModalBox">
+				<div style="width: 100%; text-align:right; background-color:#ebebe0; boder-bottom: 1px solid #a6a6a6;"><span class="postModalBoxClose" onclick="closePopup()">X</span></div>
+				<div id="modalPostContentDiv" class="postModalContent">
+				</div>
+			</div>
+			</div>
+		</form>
+	</body>
+
+</html>
+
+
